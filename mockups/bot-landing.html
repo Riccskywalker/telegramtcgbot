@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RareBit per Telegram — mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* token reali rarebit.app — tema .dark (globals.css .dark) */
+    --bg:#0a0a1f; --bg-elev:#14142e; --bg-card:#0a0a2e; --line:#242448;
+    --text:#f8fafc; --muted:#94a3b8; --dim:#64748b;
+    --accent:#4f46e5; --accent-hi:#6366f1; --accent-2:#3730a3;
+    --lime:#c8f04b; --lime-hi:#d7f56e; --up:#22c55e;
+    --hero-accent:#c8f04b; /* in dark, hero-accent = lime spark */
+    /* hero monolith (navy elevato) */
+    --stone:#0a0a2e; --stone-2:#1c1c4b; --navy-bg:#0a0a1f; --navy-elev:#14142e;
+    --hero-fg:#f8fafc; --hero-line:#242448; --hero-muted:#94a3b8; --hero-up:#22c55e;
+    --font-sans:"Hanken Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --font-serif:"Newsreader",Georgia,serif;
+    --font-mono:"Spline Sans Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; color:var(--text); color-scheme:dark;
+    font:16px/1.55 var(--font-sans);
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    background-color:var(--bg);
+    background-image:
+      radial-gradient(rgba(79,70,229,.10) 1px,transparent 1px),
+      radial-gradient(rgba(200,240,75,.07) 1px,transparent 1px);
+    background-size:22px 22px,22px 22px;
+    background-position:0 0,11px 11px;
+  }
+  .wrap{max-width:1152px;margin:0 auto;padding:0 24px}
+  a{color:inherit;text-decoration:none}
+  .nums{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .serif{font-family:var(--font-serif)}
+  .mono{font-family:var(--font-mono)}
+
+  .mock-ribbon{
+    position:fixed;top:16px;right:-46px;transform:rotate(45deg);
+    background:var(--accent);color:#fff;font:600 11px/1 var(--font-mono);letter-spacing:.14em;
+    padding:7px 56px;z-index:60;box-shadow:0 8px 22px rgb(79 70 229/.35)
+  }
+
+  /* gem */
+  .gem{display:inline-block;vertical-align:middle}
+  .brand{display:inline-flex;align-items:center;gap:9px}
+  .brand .word{font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--text)}
+  .brand .word b{font-weight:800;color:var(--muted)}
+
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;border:0;
+    font:700 14px/1 var(--font-sans);border-radius:999px;padding:13px 24px;transition:.18s ease}
+  .btn svg{width:17px;height:17px;flex:0 0 auto}
+  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 8px 22px rgb(79 70 229/.35)}
+  .btn-primary:hover{background:var(--accent-hi)}
+  .btn-primary .arr{transition:.18s transform}
+  .btn-primary:hover .arr{transform:translateX(2px)}
+  .btn-outline{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:600}
+  .btn-outline:hover{border-color:var(--dim);background:var(--bg-elev)}
+  .btn-lime{background:var(--lime);color:var(--stone);font-weight:800}
+  .btn-lime:hover{filter:brightness(1.05)}
+
+  /* eyebrow / kicker */
+  .eyebrow{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:999px;
+    padding:6px 14px;font:600 11px/1 var(--font-mono);letter-spacing:.18em;text-transform:uppercase;color:var(--hero-accent)}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--hero-accent)}
+  .kicker{font:600 11px/1 var(--font-mono);letter-spacing:.18em;text-transform:uppercase;color:var(--hero-accent)}
+
+  /* ---- top nav ---- */
+  header{position:sticky;top:0;z-index:30;background:rgba(10,10,31,.80);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .nav .links{display:flex;gap:28px;font-size:14.5px;color:var(--muted)}
+  .nav .links a:hover{color:var(--text)}
+
+  /* ---- layout shell ---- */
+  .shell{padding:36px 0 96px}
+  section{margin-top:104px}
+  section:first-of-type{margin-top:36px}
+
+  /* ---- hero ---- */
+  .hero{position:relative;overflow:hidden}
+  .hero .glow1{position:absolute;right:-110px;top:-160px;width:460px;height:460px;border-radius:50%;
+    background:rgb(79 70 229/.40);opacity:.40;filter:blur(90px);pointer-events:none}
+  .hero .glow2{position:absolute;left:-80px;bottom:-160px;width:380px;height:380px;border-radius:50%;
+    background:rgb(200 240 75/.18);opacity:.40;filter:blur(90px);pointer-events:none}
+  .hero .grid{position:relative;display:grid;grid-template-columns:1.15fr .85fr;gap:44px;align-items:center}
+  h1{font-family:var(--font-sans);font-weight:800;font-size:clamp(44px,6vw,74px);line-height:.98;
+    letter-spacing:-.035em;margin:22px 0 0;text-wrap:balance}
+  h1 em{font-style:italic;font-weight:800;letter-spacing:-.01em;color:var(--hero-accent)}
+  .lede{margin:22px 0 0;max-width:30em;font-size:18.5px;line-height:1.5;color:var(--muted)}
+  .cta-row{margin-top:34px;display:flex;gap:12px;flex-wrap:wrap}
+  .heronote{margin-top:16px;font-size:13px;color:var(--dim)}
+  .heronote b{color:var(--muted);font-weight:600}
+
+  /* phone monolith (navy) */
+  .phone{justify-self:end;width:312px;background:var(--stone);border:1px solid var(--hero-line);
+    border-radius:30px;padding:14px 13px 16px;box-shadow:0 40px 90px rgb(10 10 46/.45),0 8px 24px rgb(10 10 46/.30)}
+  .phone .notch{height:22px;display:flex;align-items:center;justify-content:center}
+  .phone .notch i{width:78px;height:5px;border-radius:6px;background:var(--hero-line);display:block}
+  .tgwin{background:var(--navy-bg);border-radius:20px;overflow:hidden;border:1px solid var(--hero-line)}
+  .tgtop{background:var(--navy-elev);padding:11px 13px;display:flex;align-items:center;gap:10px}
+  .tgtop .ava{width:32px;height:32px;border-radius:50%;background:#0a0a2e;border:1px solid var(--hero-line);display:grid;place-items:center}
+  .tgtop .nm{color:var(--hero-fg);font-size:13.5px;font-weight:600;line-height:1.15}
+  .tgtop .nm small{display:block;color:var(--hero-up);font:500 10.5px/1.4 var(--font-mono);letter-spacing:.04em}
+  .tgbody{display:flex;flex-direction:column;height:362px;background:linear-gradient(180deg,#0a0a2e,#0a0a1f)}
+  .feed{flex:1;position:relative;overflow:hidden}
+  .scene{position:absolute;inset:0;display:flex;flex-direction:column;gap:11px;padding:14px 12px}
+  .qbubble{align-self:flex-end;max-width:84%;background:#2e2a6b;color:#e7e6ff;padding:8px 12px;
+    border-radius:15px 15px 4px 15px;font:500 13px/1.4 var(--font-mono);opacity:0}
+  .qbubble b{color:var(--lime);font-weight:600}
+  .replyslot{position:relative;min-height:130px}
+  .botyping{position:absolute;top:4px;left:0;display:inline-flex;align-items:center;gap:5px;
+    background:var(--navy-elev);border:1px solid var(--hero-line);border-radius:13px;padding:11px 13px;opacity:0}
+  .botyping i{width:6px;height:6px;border-radius:50%;background:var(--hero-muted);display:block}
+  /* result card — replica della Row reale, animata in */
+  .rescard{position:absolute;inset:0;background:var(--navy-elev);border:1px solid var(--hero-line);
+    border-radius:15px;padding:12px;display:flex;gap:12px;opacity:0}
+  .thumb{width:54px;height:75px;border-radius:8px;flex:0 0 auto;position:relative;overflow:hidden;
+    background:#0a0a1f;border:1px solid var(--hero-line);box-shadow:0 4px 12px rgb(0 0 0/.35)}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .thumb::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(115deg,rgba(255,255,255,.16),transparent 42%)}
+  .meta{min-width:0;flex:1}
+  .meta .nm{color:var(--hero-fg);font-weight:700;font-size:14px;line-height:1.2}
+  .meta .sub{color:var(--hero-muted);font:500 11px/1.4 var(--font-mono);letter-spacing:.02em;margin-top:3px}
+  .meta .pr{display:flex;align-items:baseline;gap:9px;margin-top:8px}
+  .meta .pr .v{font-family:var(--font-serif);font-weight:500;font-size:22px;color:var(--hero-fg)}
+  .meta .pr .d{display:inline-flex;align-items:center;gap:3px;color:var(--hero-up);font-size:12px;font-weight:600}
+  .meta .pr .d span{font-size:9px}
+  .openbtn{margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:rgb(79 70 229/.18);
+    color:var(--lime);border-radius:9px;padding:7px 11px;font:600 12px/1 var(--font-sans)}
+  /* composer (input bar) */
+  .composer{display:flex;align-items:center;gap:8px;padding:9px 10px;background:var(--navy-elev);border-top:1px solid var(--hero-line)}
+  .field{position:relative;flex:1;display:flex;align-items:center;min-height:36px;overflow:hidden;
+    background:#0a0a1f;border:1px solid var(--hero-line);border-radius:12px;padding:0 12px}
+  .field .ph{position:absolute;left:12px;color:var(--hero-muted);font-size:13px}
+  .typed{display:inline-block;overflow:hidden;white-space:nowrap;width:0;font:500 12.5px/1 var(--font-mono);color:var(--hero-fg)}
+  .caret{display:inline-block;width:1.5px;height:15px;background:var(--lime);margin-left:2px;opacity:0}
+  .send{flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--navy-elev);color:var(--hero-muted)}
+  .send svg{width:16px;height:16px}
+
+  /* ── hero loop (≈ GIF): due carte alternate, ciclo 16s ── */
+  .field .ph{animation:rb-ph 16s infinite}
+  .t1{animation:rb-type1 16s steps(21,end) infinite}
+  .t2{animation:rb-type2 16s steps(18,end) infinite}
+  .caret{animation:rb-caret 16s infinite}
+  .send{animation:rb-send 16s infinite}
+  .s1 .qbubble{animation:rb-out1 16s infinite}
+  .s1 .botyping{animation:rb-typing1 16s infinite}
+  .s1 .rescard{animation:rb-reply1 16s infinite}
+  .s2 .qbubble{animation:rb-out2 16s infinite}
+  .s2 .botyping{animation:rb-typing2 16s infinite}
+  .s2 .rescard{animation:rb-reply2 16s infinite}
+  .botyping i{animation:rb-dot 1.2s infinite}
+  .botyping i:nth-child(2){animation-delay:.15s}
+  .botyping i:nth-child(3){animation-delay:.3s}
+  @keyframes rb-ph{0%,1%{opacity:.55}3%,13%{opacity:0}16%,51%{opacity:.55}53%,63%{opacity:0}66%,100%{opacity:.55}}
+  @keyframes rb-type1{0%,2%{width:0}12%,14%{width:21ch}15%,100%{width:0}}
+  @keyframes rb-type2{0%,52%{width:0}62%,64%{width:18ch}65%,100%{width:0}}
+  @keyframes rb-caret{0%,1%{opacity:0}3%{opacity:1}6%{opacity:.15}9%{opacity:1}14.5%{opacity:1}15%,51%{opacity:0}53%{opacity:1}56%{opacity:.15}59%{opacity:1}64.5%{opacity:1}65%,100%{opacity:0}}
+  @keyframes rb-send{0%,2%{background:var(--navy-elev);color:var(--hero-muted);transform:scale(1)}5%,13%{background:var(--accent);color:#fff;transform:scale(1)}15%{background:var(--accent);color:#fff;transform:scale(.84)}17%,51%{background:var(--navy-elev);color:var(--hero-muted);transform:scale(1)}55%,63%{background:var(--accent);color:#fff;transform:scale(1)}65%{background:var(--accent);color:#fff;transform:scale(.84)}67%,100%{background:var(--navy-elev);color:var(--hero-muted);transform:scale(1)}}
+  @keyframes rb-out1{0%,14%{opacity:0;transform:translateY(8px) scale(.96)}17%,46%{opacity:1;transform:translateY(0) scale(1)}49%,100%{opacity:0;transform:translateY(0)}}
+  @keyframes rb-typing1{0%,18%{opacity:0}21%,24%{opacity:1}26%,100%{opacity:0}}
+  @keyframes rb-reply1{0%,25%{opacity:0;transform:translateY(10px) scale(.97)}30%,46%{opacity:1;transform:translateY(0) scale(1)}49%,100%{opacity:0}}
+  @keyframes rb-out2{0%,64%{opacity:0;transform:translateY(8px) scale(.96)}67%,96%{opacity:1;transform:translateY(0) scale(1)}99%,100%{opacity:0;transform:translateY(0)}}
+  @keyframes rb-typing2{0%,68%{opacity:0}71%,74%{opacity:1}76%,100%{opacity:0}}
+  @keyframes rb-reply2{0%,75%{opacity:0;transform:translateY(10px) scale(.97)}80%,96%{opacity:1;transform:translateY(0) scale(1)}99%,100%{opacity:0}}
+  @keyframes rb-dot{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-3px);opacity:1}}
+  @media(prefers-reduced-motion:reduce){
+    .field .ph,.t1,.t2,.caret,.send,.s1 .qbubble,.s1 .botyping,.s1 .rescard,.s2 .qbubble,.s2 .botyping,.s2 .rescard,.botyping i{animation:none}
+    .t1{width:auto}.t2{display:none}.caret{display:none}.botyping{display:none}.s2{display:none}
+    .s1 .qbubble,.s1 .rescard{opacity:1;transform:none}
+    .send{background:var(--accent);color:#fff}
+  }
+
+  /* ---- stat strip ---- */
+  .stats{margin-top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .stat{background:var(--bg-card);padding:22px}
+  .stat .big{font-family:var(--font-serif);font-weight:500;font-size:40px;line-height:1;color:var(--text)}
+  .stat .lab{margin-top:9px;font:500 11px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .stat .det{margin-top:9px;font-size:12.5px;color:var(--dim)}
+  .chips{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+  .chips span{border-radius:5px;background:rgb(200 240 75/.12);padding:3px 7px;
+    font:600 11px/1 var(--font-mono);color:var(--lime)}
+
+  /* ---- pain line ---- */
+  .pain{text-align:center}
+  .pain h2{font-family:var(--font-sans);font-weight:800;font-size:clamp(30px,4vw,48px);line-height:1.05;
+    letter-spacing:-.03em;margin:0;text-wrap:balance}
+  .pain p{margin:16px auto 0;max-width:22em;font-family:var(--font-serif);font-style:italic;
+    font-size:clamp(20px,2.4vw,27px);line-height:1.35;color:var(--dim);text-wrap:balance}
+
+  /* ---- how panel ---- */
+  .panel{border:1px solid var(--line);background:var(--bg-card);border-radius:32px;padding:clamp(28px,4vw,56px)}
+  .panel .head{margin-bottom:36px}
+  .panel h2,.feat-head h2{font-family:var(--font-sans);font-weight:800;font-size:clamp(28px,3.4vw,40px);
+    letter-spacing:-.03em;margin:14px 0 0;color:var(--text)}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .step{border:1px solid var(--line);background:rgba(20,20,46,.5);border-radius:18px;padding:26px}
+  .step .n{font-family:var(--font-mono);font-weight:600;font-size:30px;color:rgb(200 240 75/.5);margin-bottom:18px}
+  .step h3{margin:0;font-size:19px;font-weight:700;letter-spacing:-.01em;line-height:1.25;color:var(--text)}
+  .step p{margin:10px 0 0;font-size:14.5px;line-height:1.55;color:var(--muted)}
+  .step code{font-family:var(--font-mono);font-size:12.5px;background:var(--bg-elev);border:1px solid var(--line);
+    border-radius:6px;padding:1px 6px;color:var(--accent)}
+
+  /* ---- features ---- */
+  .feat-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:36px;flex-wrap:wrap}
+  .feat-head a{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+  .feat-head a:hover{color:var(--accent)}
+  .feat-head a svg{width:14px;height:14px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .feat{display:flex;flex-direction:column;border:1px solid var(--line);background:var(--bg-card);border-radius:18px;
+    padding:28px;box-shadow:0 1px 2px rgb(15 23 42/.04);transition:.18s ease}
+  .feat:hover{transform:translateY(-3px);border-color:rgba(148,163,184,.4)}
+  .feat .ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgb(79 70 229/.20);color:#a5b4fc}
+  .feat .ic svg{width:22px;height:22px}
+  .feat h3{margin:22px 0 0;font-size:20px;font-weight:700;letter-spacing:-.015em;line-height:1.15;color:var(--text)}
+  .feat p{margin:10px 0 0;font-size:15px;line-height:1.55;color:var(--muted)}
+  .feat code{font-family:var(--font-mono);font-size:12.5px;background:var(--bg-elev);border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--accent)}
+
+  /* ---- per chi ---- */
+  .who{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .whocard{border:1px solid var(--line);background:var(--bg-card);border-radius:18px;padding:28px}
+  .whocard .tag{font:600 12px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+  .whocard h3{margin:12px 0 0;font-size:20px;font-weight:700;letter-spacing:-.01em;color:var(--text)}
+  .whocard p{margin:10px 0 0;color:var(--muted);font-size:15px;line-height:1.55}
+
+  /* ---- closing cta ---- */
+  .closing{position:relative;overflow:hidden;border-radius:32px;text-align:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:clamp(56px,7vw,84px) 24px}
+  .closing .blob{position:absolute;left:30%;bottom:-110px;width:320px;height:320px;border-radius:50%;
+    background:rgb(200 240 75/.25);filter:blur(80px);pointer-events:none}
+  .closing h2{position:relative;font-family:var(--font-sans);font-weight:800;font-size:clamp(30px,4vw,46px);
+    line-height:1.05;letter-spacing:-.03em;margin:0;text-wrap:balance}
+  .closing h2 em{font-style:italic;color:var(--lime)}
+  .closing .cwrap{position:relative;margin-top:32px}
+  .closing .note{position:relative;margin-top:16px;font-size:13px;color:rgba(255,255,255,.7)}
+  .closing .note a{color:var(--lime)}
+
+  /* ---- footer ---- */
+  footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0;font-size:14px;color:var(--muted)}
+  footer .row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  footer .links a{margin-left:22px;color:var(--muted)}
+  footer .links a:hover{color:var(--text)}
+
+  @media(max-width:900px){
+    .hero .grid{grid-template-columns:1fr;gap:40px}
+    .phone{justify-self:center}
+    .stats,.steps,.features,.who{grid-template-columns:1fr}
+    .nav .links{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="mock-ribbon">MOCKUP</div>
+
+<!-- gem reusable -->
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="gem-g">
+    <path d="M24 1 L47 24 L24 47 L1 24 Z" fill="#C8F04B"/>
+    <path d="M24 1 L47 24 L1 24 Z" fill="#D7F56E"/>
+    <path d="M1 24 L47 24" stroke="#0A0A2E" stroke-opacity=".22" stroke-width="1.2"/>
+    <path d="M24 1 L24 47" stroke="#0A0A2E" stroke-opacity=".16" stroke-width="1.2"/>
+  </g>
+</defs></svg>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top">
+      <svg class="gem" width="24" height="24" viewBox="0 0 48 48"><use href="#gem-g"/></svg>
+      <span class="word">Rare<b>Bit</b></span>
+    </a>
+    <nav class="links">
+      <a href="#come">Come funziona</a>
+      <a href="#cosa">Cosa fa</a>
+      <a href="#perchi">Per chi</a>
+      <a href="https://rarebit.app">Vai al sito</a>
+    </nav>
+    <a class="btn btn-primary" href="https://t.me/rarebiit_bot?startgroup=true">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.47 8.7 19.8c.5 0 .72-.21.98-.47l2.35-2.25 4.87 3.56c.9.5 1.53.24 1.77-.83l3.2-15.02h.01c.29-1.34-.48-1.86-1.36-1.53L1.6 9.46C.3 9.97.32 10.7 1.38 11.03l4.93 1.53L17.7 5.36c.54-.36 1.03-.16.63.2"/></svg>
+      Aggiungi al gruppo
+    </a>
+  </div>
+</header>
+
+<div class="wrap shell" id="top">
+
+  <!-- ──────────── HERO ──────────── -->
+  <section class="hero">
+    <div class="glow1"></div><div class="glow2"></div>
+    <div class="grid">
+      <div>
+        <span class="eyebrow"><span class="dot"></span>RareBit per Telegram · gratis</span>
+        <h1>I prezzi delle carte, <em>dentro il tuo gruppo</em>.</h1>
+        <p class="lede">Aggiungi il bot RareBit al tuo gruppo o canale Pokémon: i membri cercano una carta e ottengono il valore aggiornato, in euro, senza uscire dalla chat.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://t.me/rarebiit_bot?startgroup=true">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.47 8.7 19.8c.5 0 .72-.21.98-.47l2.35-2.25 4.87 3.56c.9.5 1.53.24 1.77-.83l3.2-15.02h.01c.29-1.34-.48-1.86-1.36-1.53L1.6 9.46C.3 9.97.32 10.7 1.38 11.03l4.93 1.53L17.7 5.36c.54-.36 1.03-.16.63.2"/></svg>
+            Aggiungi al tuo gruppo
+            <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+        <p class="heronote"><b>Gratis, per sempre</b> · Non legge la chat · Dati live da RareBit</p>
+      </div>
+
+      <!-- phone monolith -->
+      <div class="phone">
+        <div class="notch"><i></i></div>
+        <div class="tgwin">
+          <div class="tgtop">
+            <div class="ava"><svg width="18" height="18" viewBox="0 0 48 48"><use href="#gem-g"/></svg></div>
+            <div class="nm">RareBit<small>bot · online</small></div>
+          </div>
+          <div class="tgbody">
+            <div class="feed">
+              <div class="scene s1">
+                <div class="qbubble"><b>/price</b> charizard base</div>
+                <div class="replyslot">
+                  <div class="botyping"><i></i><i></i><i></i></div>
+                  <div class="rescard">
+                    <div class="thumb"><img src="charizard-base-4.webp" alt="Charizard Base Set 4/102"></div>
+                    <div class="meta">
+                      <div class="nm">Charizard</div>
+                      <div class="sub">Base Set · 4/102 · EN</div>
+                      <div class="pr">
+                        <span class="v nums">500,00&nbsp;€</span>
+                        <span class="d nums"><span>▲</span> 1,4% (7g)</span>
+                      </div>
+                      <span class="openbtn">Apri su RareBit
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="scene s2">
+                <div class="qbubble"><b>/price</b> pikachu 151</div>
+                <div class="replyslot">
+                  <div class="botyping"><i></i><i></i><i></i></div>
+                  <div class="rescard">
+                    <div class="thumb"><img src="pikachu-151-173.webp" alt="Pikachu 151 173/165"></div>
+                    <div class="meta">
+                      <div class="nm">Pikachu</div>
+                      <div class="sub">151 · 173/165 · EN</div>
+                      <div class="pr">
+                        <span class="v nums">50,00&nbsp;€</span>
+                        <span class="d nums"><span>▲</span> 2,1% (7g)</span>
+                      </div>
+                      <span class="openbtn">Apri su RareBit
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="field"><span class="ph">Messaggio</span><span class="typed t1">/price charizard base</span><span class="typed t2">/price pikachu 151</span><span class="caret"></span></div>
+              <button class="send" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.47 8.7 19.8c.5 0 .72-.21.98-.47l2.35-2.25 4.87 3.56c.9.5 1.53.24 1.77-.83l3.2-15.02h.01c.29-1.34-.48-1.86-1.36-1.53L1.6 9.46C.3 9.97.32 10.7 1.38 11.03l4.93 1.53L17.7 5.36c.54-.36 1.03-.16.63.2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- stat strip -->
+    <div class="stats">
+      <div class="stat">
+        <div class="big nums">6</div>
+        <div class="lab">Lingue di prezzo</div>
+        <div class="chips"><span>EN</span><span>IT</span><span>ES</span><span>FR</span><span>DE</span><span>JP</span></div>
+      </div>
+      <div class="stat">
+        <div class="big nums">20.483</div>
+        <div class="lab">Carte a catalogo</div>
+        <div class="det">Aggiornate ogni giorno dai mercati EU</div>
+      </div>
+      <div class="stat">
+        <div class="big serif">€</div>
+        <div class="lab">Prezzi in euro</div>
+        <div class="det">Conversione live sui tassi BCE</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── PAIN ──────────── -->
+  <section class="pain">
+    <h2>«Quanto vale questa?»</h2>
+    <p>La domanda che rimbalza nel gruppo dieci volte al giorno. Adesso ha una risposta in due secondi.</p>
+  </section>
+
+  <!-- ──────────── COME FUNZIONA ──────────── -->
+  <section id="come">
+    <div class="panel">
+      <div class="head">
+        <p class="kicker">Come funziona</p>
+        <h2>Tre passi, zero configurazione</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="n">01</div>
+          <h3>Aggiungi il bot</h3>
+          <p>Un tap su <b>Aggiungi al tuo gruppo</b> e RareBit entra nel canale. Privacy mode attiva: non legge i messaggi.</p>
+        </div>
+        <div class="step">
+          <div class="n">02</div>
+          <h3>Un membro cerca</h3>
+          <p>Scrive <code>/price charizard</code> nel gruppo — per nome, set o numero — e sceglie la carta dai risultati.</p>
+        </div>
+        <div class="step">
+          <div class="n">03</div>
+          <h3>Prezzo in chat</h3>
+          <p>Compare il valore in euro, la variazione a 7 giorni e il link alla scheda completa su RareBit.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── COSA FA ──────────── -->
+  <section id="cosa">
+    <div class="feat-head">
+      <div>
+        <p class="kicker">Cosa fa</p>
+        <h2>Tutto il valore, niente rumore</h2>
+      </div>
+      <a href="https://rarebit.app">Esplora il catalogo
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+      </a>
+    </div>
+    <div class="features">
+      <div class="feat">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9.4a4 4 0 1 0 0 5.2"/><path d="M7 10.5h5"/><path d="M7 13.5h5"/></svg></span>
+        <h3>Valore in euro</h3>
+        <p>Conversione live sui tassi BCE. Lo stesso “current value” che vedi sul sito, senza calcoli a mano.</p>
+      </div>
+      <div class="feat">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+        <h3>Ricerca intelligente</h3>
+        <p>Per nome, set (“lost origin”), sigla (“sv2a”) o numero. Tollera i refusi e accetta il tag lingua <code>EN</code> <code>IT</code> <code>DE</code> <code>FR</code> <code>ES</code>.</p>
+      </div>
+      <div class="feat">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <h3>Privacy by design</h3>
+        <p>Risponde solo al comando <code>/price</code> e alle ricerche inline — mai ai messaggi del gruppo. Privacy mode sempre attiva.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── PER CHI ──────────── -->
+  <section id="perchi">
+    <div class="feat-head"><div>
+      <p class="kicker">Per chi</p>
+      <h2>Uno strumento che ti fa fare bella figura</h2>
+    </div></div>
+    <div class="who">
+      <div class="whocard">
+        <div class="tag">Admin di gruppi &amp; canali</div>
+        <h3>Un servizio in più, gratis</h3>
+        <p>I membri smettono di chiedere “quanto vale?” e ottengono la risposta in due secondi. Tu non moderi nulla.</p>
+      </div>
+      <div class="whocard">
+        <div class="tag">Creator &amp; collezionisti</div>
+        <h3>Prezzi credibili a portata</h3>
+        <p>Durante live, recap o trade citi un valore affidabile senza cambiare app. Linkabile e condivisibile.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── CLOSING CTA ──────────── -->
+  <section>
+    <div class="closing">
+      <div class="blob"></div>
+      <h2>Pronto per il <em>tuo gruppo</em>?</h2>
+      <div class="cwrap">
+        <a class="btn btn-lime" href="https://t.me/rarebiit_bot?startgroup=true" style="padding:15px 28px;font-size:15px">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px"><path d="M9.04 15.47 8.7 19.8c.5 0 .72-.21.98-.47l2.35-2.25 4.87 3.56c.9.5 1.53.24 1.77-.83l3.2-15.02h.01c.29-1.34-.48-1.86-1.36-1.53L1.6 9.46C.3 9.97.32 10.7 1.38 11.03l4.93 1.53L17.7 5.36c.54-.36 1.03-.16.63.2"/></svg>
+          Aggiungi RareBit al tuo gruppo
+        </a>
+      </div>
+      <p class="note">Vuoi solo provarlo? Scrivi a <a href="https://t.me/rarebiit_bot">@rarebiit_bot</a> in privato.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap row">
+    <a class="brand" href="https://rarebit.app">
+      <svg class="gem" width="22" height="22" viewBox="0 0 48 48"><use href="#gem-g"/></svg>
+      <span class="word">Rare<b>Bit</b></span>
+    </a>
+    <div class="links">
+      <a href="https://rarebit.app">rarebit.app</a>
+      <a href="#cosa">Cosa fa</a>
+      <a href="https://t.me/rarebiit_bot">Bot Telegram</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

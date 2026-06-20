@@ -1,0 +1,10 @@
+[project]
+name = "rarebit-bot"
+version = "0.1.0"
+description = "Bot Telegram di price lookup per RareBit (API pubblica)"
+requires-python = ">=3.9"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,5 @@
+# RareBit Telegram bot — runtime deps (compatibili con Python 3.9+)
+python-telegram-bot[rate-limiter]==21.9
+httpx==0.27.2
+cachetools==5.5.0
+python-dotenv==1.0.1
