@@ -74,7 +74,7 @@ class GroupStore:
         except FileNotFoundError:
             return
         except (OSError, ValueError):
-            logger.warning("Store gruppi illeggibile (%s), riparto vuoto", self._path)
+            logger.warning("Cannot read group store (%s); starting empty", self._path)
             return
         for rec in raw.get("groups", []):
             try:
@@ -99,7 +99,7 @@ class GroupStore:
                 json.dump(payload, fh, ensure_ascii=False, indent=2)
             os.replace(tmp, self._path)
         except OSError:
-            logger.exception("Salvataggio store gruppi fallito")
+            logger.exception("Could not save group store")
             try:
                 os.unlink(tmp)
             except OSError:

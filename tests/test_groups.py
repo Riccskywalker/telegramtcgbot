@@ -1,6 +1,6 @@
 """Test dello store dei gruppi e della logica di membership (niente rete)."""
 
-from rarebit_bot.groups import (
+from tcgbot.telegram.groups import (
     Group,
     GroupStore,
     is_trackable_chat,
@@ -44,7 +44,7 @@ def test_persistence_roundtrip(tmp_path):
     path = str(tmp_path / "groups.json")
     s1 = GroupStore(path)
     s1.upsert(
-        Group(chat_id=-100, type="channel", title="RareBit", added_by=7, is_admin=True)
+        Group(chat_id=-100, type="channel", title="TCG collectors", added_by=7, is_admin=True)
     )
     # una nuova istanza ricarica da disco
     s2 = GroupStore(path)

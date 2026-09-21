@@ -1,15 +1,4 @@
-"""Logica di ricerca: indice dei set + parsing query + ranking dei risultati.
-
-L'API RareBit cerca per NOME (typo-tolerant) ma:
-  - ignora il `take` come limite (param giusto = `take`, gestito in api.py);
-  - non usa le parole del set nel ranking ("charizard lost origin" resta una
-    lista di Charizard a caso);
-  - non capisce le sigle dei set nel testo ("charizard sv2a").
-
-Qui riconosciamo nella query un eventuale **set** (per nome es. "lost origin"
-o per sigla es. "sv2a") e un eventuale **numero** di carta ("04", "TG03"), così
-da filtrare per `setCode` quando possibile e ri-ordinare i candidati.
-"""
+"""Set recognition, field-query construction and stable result ranking."""
 
 from __future__ import annotations
 
@@ -17,7 +6,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
-_WORD = re.compile(r"[a-z0-9]+")
+_WORD = re.compile(r"[^\W_]+(?:[-’'][^\W_]+)*")
 # token che "sembra" un numero di carta: 1-4 cifre, con prefisso/suffisso lettera
 # opzionale (4, 04, 187, TG03, H31, 025a). Deve contenere almeno una cifra.
 _NUM = re.compile(r"^[a-z]{0,3}\d{1,4}[a-z]?$")
@@ -75,8 +64,11 @@ def norm_number(x: Optional[str]) -> Optional[str]:
 @dataclass
 class SetInfo:
     code: str
-    slug: Optional[str]
     name: str
+    ptcgo_code: Optional[str] = None
+    region: Optional[str] = None
+    release_date: Optional[str] = None
+    total: Optional[int] = None
 
 
 @dataclass
@@ -92,8 +84,12 @@ class SetIndex:
             code = s.get("code")
             if not code:
                 continue
-            info = SetInfo(code=code, slug=s.get("slug"), name=s.get("name") or "")
+            info = SetInfo(code=code, name=s.get("name") or "",
+                           ptcgo_code=s.get("ptcgo_code"), region=s.get("region"),
+                           release_date=s.get("release_date"), total=s.get("total"))
             by_code[code.lower()] = info
+            if info.ptcgo_code:
+                by_code[info.ptcgo_code.lower()] = info
             key = " ".join(tokens(info.name))
             if key:
                 name_groups.setdefault(key, []).append(info)
@@ -101,10 +97,9 @@ class SetIndex:
         return cls(by_code=by_code, by_name=by_name)
 
     def code_hint(self, tok: str) -> Optional[SetInfo]:
-        """Sigla set SOLO se il token combacia con un code E contiene una cifra
-        (evita le collisioni con i nomi Pokémon: 'mew' è anche il code di 151)."""
+        """Recognize canonical and PTCGO codes; keep Mew as a Pokémon name."""
         info = self.by_code.get(tok.lower())
-        if info and any(ch.isdigit() for ch in tok):
+        if info and tok.lower() != "mew":
             return info
         return None
 
@@ -140,17 +135,18 @@ def parse_query(query: str, index: Optional[SetIndex]) -> Parsed:
     set_label: Optional[str] = None
 
     if index is not None:
-        for i, t in enumerate(toks):
-            info = index.code_hint(t)
-            if info:
-                set_code, set_label = info.code, info.name
-                used.add(i)
-                break
-        if set_code is None:
-            info, idxs = index.name_run(toks)
-            if info:
-                set_code, set_label = info.code, info.name
-                used |= idxs
+        # Prefer a complete set name to a code occurring inside that name.
+        info, idxs = index.name_run(toks)
+        if info:
+            set_code, set_label = info.code, info.name
+            used |= idxs
+        else:
+            for i, t in enumerate(toks):
+                info = index.code_hint(t)
+                if info:
+                    set_code, set_label = info.code, info.name
+                    used.add(i)
+                    break
 
     number: Optional[str] = None
     name_tokens: List[str] = []
@@ -162,13 +158,15 @@ def parse_query(query: str, index: Optional[SetIndex]) -> Parsed:
         else:
             name_tokens.append(t)
 
-    q_parts = list(name_tokens)
-    # senza filtro set, tenere il numero nella q aiuta il ranking dell'API
-    if number is not None and set_code is None:
-        q_parts.append(number)
-    q = " ".join(q_parts).strip()
-    if not q and set_code is None:
-        q = query.strip()
+    q_parts = []
+    if name_tokens:
+        name = " ".join(name_tokens)
+        q_parts.append('name:' + ('"' + name + '"' if len(name_tokens) > 1 else name))
+    if set_code:
+        q_parts.append("set.code:" + set_code.lower())
+    if number is not None:
+        q_parts.append("number:" + number)
+    q = " ".join(q_parts)
     return Parsed(
         q=q, set_code=set_code, name_tokens=name_tokens,
         number=number, set_label=set_label,

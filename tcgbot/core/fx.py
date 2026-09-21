@@ -1,4 +1,4 @@
-"""Conversione valute via tassi BCE (stessa fonte che usa RareBit).
+"""Conversione valute via tassi BCE.
 
 I prezzi dell'API arrivano nella valuta della fonte (EUR per WEST, spesso USD
 per il Giappone via TCGplayer). Qui li portiamo alla valuta di display
@@ -13,6 +13,8 @@ from xml.etree import ElementTree
 
 import httpx
 from cachetools import TTLCache
+
+from .config import USER_AGENT
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +51,7 @@ class FxRates:
 
     def __init__(self, timeout: float = 8.0, ttl: int = 21600) -> None:
         self._client = httpx.AsyncClient(
-            timeout=timeout, headers={"User-Agent": "rarebit-tg-bot/0.1"}
+            timeout=timeout, headers={"User-Agent": USER_AGENT}
         )
         self._cache: TTLCache = TTLCache(maxsize=1, ttl=ttl)
 
@@ -65,7 +67,7 @@ class FxRates:
             resp.raise_for_status()
             root = ElementTree.fromstring(resp.text)
         except Exception as exc:  # rete/parse: degradiamo, niente conversione
-            logger.warning("FX BCE non disponibile: %s", exc)
+            logger.warning("ECB FX rates unavailable: %s", exc)
             return None
         out: Dict[str, float] = {"EUR": 1.0}
         for el in root.iter():

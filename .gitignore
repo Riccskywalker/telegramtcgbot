@@ -1,5 +1,5 @@
 .env
-.venv/
+.venv
 venv/
 __pycache__/
 *.pyc
@@ -7,5 +7,5 @@ __pycache__/
 .mypy_cache/
 *.log
 .DS_Store
-# store runtime dei gruppi/canali dove il bot è stato aggiunto
+# Runtime group membership store
 groups.json

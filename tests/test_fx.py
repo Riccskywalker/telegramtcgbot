@@ -1,6 +1,6 @@
 """Test della conversione valute pura (niente rete)."""
 
-from rarebit_bot.fx import convert_amount
+from tcgbot.core.fx import convert_amount
 
 RATES = {"EUR": 1.0, "USD": 1.1467, "JPY": 184.88, "GBP": 0.86653}
 

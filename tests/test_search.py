@@ -1,7 +1,7 @@
 """Test del parsing query + ranking + indice set (puro, niente rete)."""
 
-from rarebit_bot.api import Item
-from rarebit_bot.search import (
+from tcgbot.core.api import Item
+from tcgbot.core.search import (
     SetIndex,
     extract_language,
     norm_number,
@@ -27,18 +27,18 @@ def test_norm_number():
     assert norm_number(None) is None
 
 
-def test_code_hint_requires_digit():
+def test_code_hint_avoids_mew_collision():
     assert INDEX.code_hint("sv2a").code == "SV2a"
     assert INDEX.code_hint("SV2A").code == "SV2a"
     assert INDEX.code_hint("mew") is None  # collisione col Pokémon → niente sigla
-    assert INDEX.code_hint("lor") is None  # senza cifra → via nome, non sigla
+    assert INDEX.code_hint("lor").code == "LOR"
 
 
 def test_parse_setcode_token():
     p = parse_query("charizard sv2a", INDEX)
     assert p.set_code == "SV2a"
     assert p.name_tokens == ["charizard"]
-    assert p.q == "charizard"
+    assert p.q == "name:charizard set.code:sv2a"
     assert p.number is None
 
 
@@ -46,7 +46,7 @@ def test_parse_setname_run():
     p = parse_query("charizard lost origin", INDEX)
     assert p.set_code == "LOR"
     assert p.name_tokens == ["charizard"]
-    assert p.q == "charizard"
+    assert p.q == "name:charizard set.code:lor"
 
 
 def test_parse_number():
@@ -54,7 +54,7 @@ def test_parse_number():
     assert p.set_code is None
     assert p.number == "4"
     assert p.name_tokens == ["charizard"]
-    assert p.q == "charizard 4"  # numero tenuto in q per il ranking API
+    assert p.q == "name:charizard number:4"
 
 
 def test_parse_mew_pokemon_not_setcode():
@@ -68,7 +68,7 @@ def test_parse_ambiguous_151_stays_query():
     p = parse_query("pikachu 151", INDEX)
     assert p.set_code is None  # "151" non matcha un nome set unico
     assert p.number == "151"
-    assert p.q == "pikachu 151"
+    assert p.q == "name:pikachu number:151"
 
 
 def _it(name, number):
@@ -117,3 +117,32 @@ def test_extract_language_single_token_not_treated():
 
 def test_extract_language_keeps_card_name_token_ex():
     assert extract_language("charizard ex en") == ("charizard ex", "en")
+
+
+import pytest
+
+@pytest.mark.parametrize('query,expected', [
+    ('charizard', 'name:charizard'),
+    ('dark charizard', 'name:"dark charizard"'),
+    ('charizard lost origin', 'name:charizard set.code:lor'),
+    ('charizard 125', 'name:charizard number:125'),
+    ('lost origin 125', 'set.code:lor number:125'),
+    ('charzard', 'name:charzard'),  # No extra paid search or invented correction.
+    ('charizard LOR 125', 'name:charizard set.code:lor number:125'),
+    ('ho-oh', 'name:ho-oh'),
+    ("farfetch'd", "name:farfetch'd"),
+])
+def test_field_queries(query, expected):
+    assert parse_query(query, INDEX).q == expected
+
+
+def test_ptcgo_alias_and_set_metadata():
+    idx = SetIndex.build([{'code': 'canonical', 'ptcgo_code': 'ABC', 'name': 'Example',
+                          'region': 'WEST', 'release_date': '2026-01-01', 'total': 123}])
+    assert parse_query('pikachu abc', idx).q == 'name:pikachu set.code:canonical'
+    assert idx.code_hint('abc').total == 123
+
+
+def test_full_set_name_before_code_inside_name():
+    idx = SetIndex.build([{'code': 'base', 'name': 'Base Set'}])
+    assert parse_query('charizard base set', idx).q == 'name:charizard set.code:base'
