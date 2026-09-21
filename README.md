@@ -4,7 +4,7 @@ Pokémon TCG card and sealed prices in your Telegram group, using your own pokem
 
 ## Install in 10 minutes
 
-1. Get a free server API key at https://pokemontcgapi.com/free-api-key and **verify your email** to unlock 800 trial credits. Without verification you have only 80 credits and a small daily cap: a busy bot can stop in an afternoon. The deployment brief specifies 40 credits/day; the current signup source derives 20 (200 / 10). Check `/quota` for your account’s effective cap. Trial credits are granted once; they do not renew. The verified trial daily cap is 200.
+1. Get a free server API key at https://pokemontcgapi.com/free-api-key and **verify your email** to unlock 800 trial credits with a 400 credits/day cap. Without verification you have only 80 credits with a 40 credits/day cap: a busy bot can stop in an afternoon. Check `/quota` for your account’s effective cap. Trial credits are granted once; they do not renew.
 2. Get a Telegram token from **@BotFather** with `/newbot`. Enable inline searches with `/setinline` (for example, placeholder `Search card name, set or number`). Add the bot to your group; Telegram privacy mode can stay enabled.
 3. In the cloned repository, create `.env` with these three lines:
 
@@ -54,7 +54,7 @@ For systemd, create a `telegramtcgbot` service account, place the checkout, `.en
 | Images | 0 |
 | `/quota` | 0 |
 
-800 trial credits ≈ 160 price checks; a group doing 20 checks a day runs ~8 days on the trial, then Developer at 29 €/month gives 50,000 credits.
+Unverified accounts have 80 credits with a 40/day cap; verified trial accounts have 800 credits with a 400/day cap. 800 trial credits ≈ 160 price checks; a group doing 20 price checks a day (~100 credits) stays under the 400/day cap and runs ~8 days on the trial, then Developer at 29 €/month gives 50,000 credits.
 
 These estimates exclude the set index: approximately 3 credits at startup (652 sets, 250 per page), shared across all lookups. It refreshes after 24 hours using ETags. The in-memory cache holds up to 2,000 URLs: searches and prices for 6 hours, sets and details for 24 hours. A restart clears it; eviction can also require a new request. An expired entry sends `If-None-Match`: a 304 is free, while changed data costs the normal endpoint credits.
 
@@ -62,7 +62,7 @@ Inline lists contain names, sets, collector numbers and images. Selecting a resu
 
 Prices use the EUR index and its date. An explicit language tag selects that locale's normal printing when available (NORMAL before unspecified printing); otherwise the overall index is used. The trial can withhold non-English locales. If there is no index, the bot uses TCGplayer Market in USD and converts with cached ECB exchange rates; if FX is unavailable it shows USD. Source quotes retain their original currency. Sealed changes compare current value with Cardmarket's 7-day average, and are labelled accordingly.
 
-Plan figures were checked against the API documentation and its shared plan definitions on 2026-09-21.
+Trial credit limits and daily caps were verified by the auditor against live `/v1/me` responses on 2026-09-21.
 
 ## Commands
 
@@ -72,10 +72,10 @@ Plan figures were checked against the API documentation and its shared plan defi
 | `/price` | `/price charizard 125`, `/price charizard obsidian flames`, `/price mew sv2a` |
 | `/price` with language | `/price charizard 125 EN` (also IT, DE, FR, ES) |
 | `/box` | `/box lost origin booster box` |
-| `/quota` | Plan, credits used/limit, daily cap and trial expiry availability; owner only in private chat |
+| `/quota` | Plan, credits used/limit and remaining, daily usage/cap and trial expiry; owner only in private chat |
 | Inline | `@your_bot charizard 125` |
 
-`/v1/me` currently exposes the quota period end, but no separate trial expiry. `/quota` reports the expiry as not provided and shows the period end separately; trial credits do not renew.
+`/v1/me` exposes the trial expiry in `data.quota.trial_expires_at` and its status in `data.quota.trial_expired`. `/quota` shows the expiry with `(expired)` when applicable, `not applicable` for renewing plans, and `not provided` only when the field is missing. It also shows the quota period end separately; trial credits do not renew.
 
 Use English names. Queries become field syntax such as `name:charizard set.code:obf number:125`; multiword names are quoted. Set names and PTCGO codes are recognized. Typos are passed through, without additional paid searches or a guarantee of correction. `mew` stays a Pokémon name to avoid its collision with a set code.
 

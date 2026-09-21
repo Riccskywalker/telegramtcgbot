@@ -83,10 +83,19 @@ def render_quota(data):
     limit = quota.get('credits_limit', 'unknown')
     cap = quota.get('daily_cap', 'unknown')
     trial = quota.get('renews') is False
-    expires = 'not provided by API' if trial else 'not applicable'
+    expires = quota.get('trial_expires_at', 'not provided')
+    if quota.get('renews') is True:
+        expires = 'not applicable'
+    elif 'trial_expires_at' in quota and quota.get('trial_expired'):
+        expires = f'{expires} (expired)'
+    credits = f'{quota.get("credits_used", "unknown")} / {"unlimited" if limit is None else limit}'
+    if 'credits_remaining' in quota:
+        credits += f' ({quota["credits_remaining"]} remaining)'
+    daily = 'none' if cap is None else str(cap)
+    if 'daily_used' in quota:
+        daily = f'{quota["daily_used"]} / {daily} today'
     lines = [f'Plan: {plan.get("name") or plan.get("code") or "unknown"}',
-             f'Credits: {quota.get("credits_used", "unknown")} / {"unlimited" if limit is None else limit}',
-             f'Daily cap: {"none" if cap is None else cap}', f'Trial expiry: {expires}']
+             f'Credits: {credits}', f'Daily cap: {daily}', f'Trial expiry: {expires}']
     if trial and quota.get('resets_at'):
         lines.append(f'Current period ends: {quota["resets_at"]} (trial credits do not renew)')
     if quota.get('stale'):

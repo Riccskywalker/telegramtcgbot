@@ -57,8 +57,31 @@ def test_subtitles_and_escaping():
 
 
 def test_quota_shape():
-    result = f.render_quota({'plan': {'name': 'Trial'}, 'quota': {'credits_used': 40,
-        'credits_limit': 800, 'daily_cap': 200, 'renews': False, 'resets_at': '2026-10-01'}})
-    assert result == ('Plan: Trial\nCredits: 40 / 800\nDaily cap: 200\nTrial expiry: not provided by API\n'
-                      'Current period ends: 2026-10-01 (trial credits do not renew)')
+    result = f.render_quota({'plan': {'name': 'Trial'}, 'quota': {
+        'credits_limit': 800, 'credits_used': 8, 'credits_remaining': 792,
+        'daily_cap': 400, 'daily_used': 8, 'period_seq': 1,
+        'period_start': '2026-09-01T00:00:00.000Z', 'resets_at': '2026-10-01T00:00:00.000Z',
+        'renews': False, 'trial_expires_at': '2026-10-20T16:17:55.246Z',
+        'trial_expired': False, 'overage_enabled': False, 'stale': False}})
+    assert result == ('Plan: Trial\nCredits: 8 / 800 (792 remaining)\nDaily cap: 8 / 400 today\n'
+                      'Trial expiry: 2026-10-20T16:17:55.246Z\n'
+                      'Current period ends: 2026-10-01T00:00:00.000Z (trial credits do not renew)')
     assert 'Daily cap: none' in f.render_quota({'quota': {'daily_cap': None}})
+
+
+@pytest.mark.parametrize('quota,expected', [
+    ({'renews': False, 'trial_expires_at': '2026-10-20T16:17:55.246Z', 'trial_expired': True},
+     'Trial expiry: 2026-10-20T16:17:55.246Z (expired)'),
+    ({'renews': True}, 'Trial expiry: not applicable'),
+    ({'renews': False}, 'Trial expiry: not provided'),
+    ({}, 'Trial expiry: not provided'),
+])
+def test_quota_trial_expiry(quota, expected):
+    assert expected in f.render_quota({'quota': quota}).splitlines()
+
+
+def test_quota_zero_usage_and_remaining():
+    result = f.render_quota({'quota': {'credits_used': 80, 'credits_limit': 80,
+        'credits_remaining': 0, 'daily_used': 0, 'daily_cap': 40}})
+    assert 'Credits: 80 / 80 (0 remaining)' in result
+    assert 'Daily cap: 0 / 40 today' in result
