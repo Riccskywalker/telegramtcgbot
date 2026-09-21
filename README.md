@@ -1,112 +1,104 @@
-# RareBit Telegram bot
+# telegramtcgbot
 
-Bot Telegram che dà il **prezzo di carte e sigillati Pokémon** dentro le chat e
-i gruppi, appoggiandosi all'**API pubblica di RareBit** (`api.rarebit.app`).
+Pokémon TCG card and sealed prices in your Telegram group, using your own pokemontcgapi.com key.
 
-Side project: legge solo gli endpoint catalogo, **non tocca nulla della prod
-RareBit**.
+## Install in 10 minutes
 
-## Cosa fa (v1 — solo lookup)
+1. Get a free server API key at https://pokemontcgapi.com/free-api-key and **verify your email** to unlock 800 trial credits. Without verification you have only 80 credits and a small daily cap: a busy bot can stop in an afternoon. The deployment brief specifies 40 credits/day; the current signup source derives 20 (200 / 10). Check `/quota` for your account’s effective cap. Trial credits are granted once; they do not renew. The verified trial daily cap is 200.
+2. Get a Telegram token from **@BotFather** with `/newbot`. Enable inline searches with `/setinline` (for example, placeholder `Search card name, set or number`). Add the bot to your group; Telegram privacy mode can stay enabled.
+3. In the cloned repository, create `.env` with these three lines:
 
-- **Ricerca inline** `@nomebot charizard lost origin` — funziona in qualsiasi
-  chat/gruppo **senza aggiungere il bot e senza leggere i messaggi**. È il modo
-  con cui ti insedi nei gruppi senza fare spam.
-- `/price <carta>` — prezzo (current value) + variazione 7 giorni, con bottone
-  verso la scheda su RareBit. Più risultati → menù di scelta.
-- `/box <sigillato>` — idem per box / ETB / tin / blister.
-- `/start`, `/help` — istruzioni + bottone "aggiungimi a un gruppo".
+   ```dotenv
+   TELEGRAM_BOT_TOKEN=your_botfather_token
+   PTCG_API_KEY=your_server_api_key
+   BOT_LANG=en
+   ```
 
-Refusi tollerati (`charzard` → Charizard), multi-lingua/valuta come li dà l'API.
-Ogni link verso rarebit.app porta i parametri UTM per misurare le conversioni.
+4. Start with Docker:
 
-Non fa (per scelta, v1): scan da foto, prezzi venduti eBay, deal finder,
-portfolio, digest schedulati. Vedi la sezione "Roadmap".
+   ```sh
+   docker compose up -d
+   ```
 
-## Setup
+   Or use Python 3.9+:
 
-```bash
-cd /Users/ricc/rarebit-bot
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env      # poi metti RAREBIT_BOT_TOKEN
+   ```sh
+   python3 -m venv .venv
+   .venv/bin/python -m pip install -r requirements.txt
+   . .venv/bin/activate
+   python -m tcgbot
+   ```
+
+Only run one polling instance per Telegram token. The process exits before any network request if either required credential is missing.
+
+Optional `.env` settings:
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `PTCG_API_BASE` | `https://api.pokemontcgapi.com/v1` | API root |
+| `BOT_LANG` | `en` | Interface language; this release supports English only |
+| `ADMIN_CHAT_ID` | unset | Owner's positive Telegram user/private chat ID, enabling private `/quota` |
+
+`groups.json` tracks group membership locally. In Docker it survives a container restart, but not container replacement. There are no scheduled group broadcasts.
+
+For systemd, create a `telegramtcgbot` service account, place the checkout, `.env` and virtual environment in `/opt/telegramtcgbot`, make that directory writable by the account for `groups.json`, then install `deploy/telegramtcgbot.service` in `/etc/systemd/system/` and enable it. Choose systemd or Docker, not both for the same token.
+
+## What it costs in credits
+
+| Action | Credits |
+| --- | ---: |
+| Inline result list (one search, up to 25 candidates) | 1 |
+| `/price` | Up to 5: search 1 + prices 2 + 7d stats 2 |
+| `/box` | Up to 3: search 1 + prices 2 |
+| Repeated lookups within TTL, or unchanged ETag revalidation | 0 |
+| Images | 0 |
+| `/quota` | 0 |
+
+800 trial credits ≈ 160 price checks; a group doing 20 checks a day runs ~8 days on the trial, then Developer at 29 €/month gives 50,000 credits.
+
+These estimates exclude the set index: approximately 3 credits at startup (652 sets, 250 per page), shared across all lookups. It refreshes after 24 hours using ETags. The in-memory cache holds up to 2,000 URLs: searches and prices for 6 hours, sets and details for 24 hours. A restart clears it; eviction can also require a new request. An expired entry sends `If-None-Match`: a 304 is free, while changed data costs the normal endpoint credits.
+
+Inline lists contain names, sets, collector numbers and images. Selecting a result posts its identity; tap **Current value** to load its price for 2 additional credits, with no stats request. A selection whose item has expired may also need a 1-credit detail lookup. Alternatives under `/price` and `/box` are only priced when tapped. Search lists never request `include=prices`.
+
+Prices use the EUR index and its date. An explicit language tag selects that locale's normal printing when available (NORMAL before unspecified printing); otherwise the overall index is used. The trial can withhold non-English locales. If there is no index, the bot uses TCGplayer Market in USD and converts with cached ECB exchange rates; if FX is unavailable it shows USD. Source quotes retain their original currency. Sealed changes compare current value with Cardmarket's 7-day average, and are labelled accordingly.
+
+Plan figures were checked against the API documentation and its shared plan definitions on 2026-09-21.
+
+## Commands
+
+| Command | Example / purpose |
+| --- | --- |
+| `/start`, `/help` | Instructions |
+| `/price` | `/price charizard 125`, `/price charizard obsidian flames`, `/price mew sv2a` |
+| `/price` with language | `/price charizard 125 EN` (also IT, DE, FR, ES) |
+| `/box` | `/box lost origin booster box` |
+| `/quota` | Plan, credits used/limit, daily cap and trial expiry availability; owner only in private chat |
+| Inline | `@your_bot charizard 125` |
+
+`/v1/me` currently exposes the quota period end, but no separate trial expiry. `/quota` reports the expiry as not provided and shows the period end separately; trial credits do not renew.
+
+Use English names. Queries become field syntax such as `name:charizard set.code:obf number:125`; multiword names are quoted. Set names and PTCGO codes are recognized. Typos are passed through, without additional paid searches or a guarantee of correction. `mew` stays a Pokémon name to avoid its collision with a set code.
+
+Price messages have no promotional links. Attribution appears only at the end of `/start` and `/help`.
+
+## Development
+
+```sh
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m pytest -q tests
+.venv/bin/python -m compileall tcgbot
 ```
 
-Crea il bot con [@BotFather](https://t.me/BotFather), prendi il token e mettilo
-in `.env`. **Importante per i gruppi:**
+Tests use recorded JSON fixtures and mock HTTP; they make no network calls. Fixture image URLs are preserved exactly as returned by the provider. The bot sends image URLs to Telegram and never downloads image bytes.
 
-- `/setprivacy` → **Enable** (privacy mode ON: il bot vede solo i comandi, non
-  legge la chat — è anche ciò che convince gli admin a tenerlo).
-- `/setinline` → abilita la modalità inline (placeholder es. `cerca una carta…`).
-- `/setinlinefeedback` → opzionale.
+For a **manual live audit**, export `PTCG_API_KEY` and run `.venv/bin/python scripts/smoke.py`. It performs one field search, one prices request, one stats request with `window=7d`, and one `/v1/me` request, then prints credits reported by the response headers (normally 5). It does not read `.env`.
 
-## Avvio
+`tcgbot/core/` owns configuration, API, caching, query parsing, prices, formatting and FX; it imports no Telegram modules. `tcgbot/telegram/` owns polling, handlers, copy and group tracking. API quota headers are logged at DEBUG; fewer than 50 remaining credits trigger at most one warning per hour.
 
-```bash
-python -m rarebit_bot
-```
+## Roadmap
 
-Gira in **polling** (nessun server/webhook richiesto). Una sola istanza per
-token alla volta.
+Discord entry point next (`discordtcgbot`), reusing the same core.
 
-## Test
+## License
 
-```bash
-# funzioni pure (offline)
-pip install -r requirements-dev.txt
-pytest -q
-
-# smoke end-to-end contro l'API live (rete, nessun token)
-python scripts/smoke.py
-```
-
-## Deploy su VPS (come gli altri bot)
-
-```bash
-# sul VPS
-git clone <repo> /opt/rarebit-bot && cd /opt/rarebit-bot
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-cp .env.example .env   # compila il token
-sudo cp deploy/rarebit-bot.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now rarebit-bot
-journalctl -u rarebit-bot -f
-```
-
-## Configurazione (env)
-
-Tutte le variabili sono in `.env.example`. Le principali:
-
-| Variabile             | Default                        | Note |
-|-----------------------|--------------------------------|------|
-| `RAREBIT_BOT_TOKEN`   | —                              | obbligatorio |
-| `RAREBIT_LOCALE`      | `it`                           | lingua dei link al sito |
-| `RAREBIT_IMAGE_MODE`  | `preview`                      | `preview`/`photo`/`none` |
-| `RAREBIT_UTM`         | `utm_source=telegram…`         | vuoto per disattivare |
-| `RAREBIT_CACHE_TTL`   | `120`                          | cache risposte API (s) |
-
-> `IMAGE_MODE=preview` mostra la card art come anteprima-link sopra il testo.
-> Le immagini sono `.webp`: se l'anteprima non rende su qualche client, prova
-> `photo` (manda la foto) o `none`. Da rivalutare col token in mano.
-
-## Struttura
-
-```
-rarebit_bot/
-  config.py      env → Config
-  api.py         client async API RareBit + cache + Item normalizzato
-  formatting.py  URL, prezzi (stile IT), delta, rendering messaggi (puro)
-  texts.py       tutta la copy italiana
-  handlers.py    comandi, inline, callback, errori
-  bot.py         bootstrap Application + polling
-scripts/smoke.py smoke test live
-tests/           test funzioni pure
-deploy/          unit systemd
-```
-
-## Roadmap (fase 2, non in v1)
-
-- Digest movers giornaliero/settimanale per gruppo (opt-in admin) — l'indice #29.
-- Alert prezzo e valore portfolio (in DM, richiede collegare l'account).
-- Box EV (concentrazione valore del set) nel comando `/box`.
-- Conversione valuta unica (oggi mostra la valuta della fonte).
+MIT — see [LICENSE](LICENSE).

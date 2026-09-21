@@ -1,0 +1,20 @@
+[Unit]
+Description=telegramtcgbot (Pokemon TCG price lookup)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=telegramtcgbot
+Group=telegramtcgbot
+WorkingDirectory=/opt/telegramtcgbot
+ExecStart=/opt/telegramtcgbot/.venv/bin/python -m tcgbot
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
