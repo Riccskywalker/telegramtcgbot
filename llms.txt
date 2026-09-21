@@ -1,0 +1,20 @@
+# telegramtcgbot
+
+> Open-source Python Pokémon TCG card and sealed price bot for Telegram, using Cardmarket and TCGplayer data through pokemontcgapi.com, with inline search and Docker support.
+
+## Docs
+
+- [README](README.md): Installation, commands, credit costs and service setup.
+- [For AI agents](README.md#for-ai-agents): Executable setup checklist, credentials and environment defaults.
+- [Known errors](README.md#known-errors): Exact messages and recovery actions.
+- [Commands](README.md#commands): Chat commands and inline search.
+- [Credit costs](README.md#what-it-costs-in-credits): Verified budgets and trial estimates.
+- [API requests](README.md#how-it-talks-to-the-api): Endpoints, costs and cache TTLs.
+- [Query syntax](README.md#query-syntax-the-bot-builds): Field queries and price languages.
+- [Service setup](README.md#run-as-a-service): Docker Compose and systemd.
+- [Development](README.md#development): Offline tests and manual smoke check.
+- [Agent instructions](AGENTS.md): Architecture, contribution rules and credit budgets.
+- [Environment template](.env.example): Required credentials and optional settings.
+- [API agent documentation](https://pokemontcgapi.com/llms.txt): Provider documentation index.
+- [Free API key](https://pokemontcgapi.com/free-api-key): Obtain a key and verify the account email.
+- [API documentation](https://pokemontcgapi.com/docs): Provider reference documentation.
